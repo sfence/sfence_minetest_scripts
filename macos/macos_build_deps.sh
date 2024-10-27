@@ -26,7 +26,8 @@ download_macos_deps() {
 	download_macos_archive libogg.tar.gz https://ftp.osuosl.org/pub/xiph/releases/ogg/libogg-1.3.5.tar.gz 0eb4b4b9420a0f51db142ba3f9c64b333f826532dc0f48c6410ae51f4799b664
 	download_macos_archive libpng.tar.xz https://downloads.sourceforge.net/project/libpng/libpng16/1.6.43/libpng-1.6.43.tar.xz 6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c
 	download_macos_archive libvorbis.tar.gz https://github.com/sfence/libvorbis/archive/refs/tags/v1.3.7_macos_apple_silicon.tar.gz 61dd22715136f13317326ea60f9c1345529fbc1bf84cab99d6b7a165bf86a609
-	download_macos_archive luajit.tar.gz https://github.com/LuaJIT/LuaJIT/archive/f725e44cda8f359869bf8f92ce71787ddca45618.tar.gz 2b5514bd6a6573cb6111b43d013e952cbaf46762d14ebe26c872ddb80b5a84e0
+	#download_macos_archive luajit.tar.gz https://github.com/LuaJIT/LuaJIT/archive/f725e44cda8f359869bf8f92ce71787ddca45618.tar.gz 2b5514bd6a6573cb6111b43d013e952cbaf46762d14ebe26c872ddb80b5a84e0
+	download_macos_archive luajit.zip https://github.com/sfence/LuaJIT/archive/refs/heads/sfence_macos_fix_and_map_jit.zip c5a16e3c09bc5f38941752f8fc7e420562660feb2a447bc4a7851f4e49c21249
 	download_macos_archive zstd.tar.gz https://github.com/facebook/zstd/archive/refs/tags/v1.5.6.tar.gz 30f35f71c1203369dc979ecde0400ffea93c27391bfd2ac5a9715d2173d92ff7
 	# leveldb depends
 	download_macos_archive snappy.tar.gz https://github.com/google/snappy/archive/refs/tags/1.2.1.tar.gz 736aeb64d86566d2236ddffa2865ee5d7a82d26c9016b36218fcc27ea4f09f86
@@ -69,7 +70,8 @@ untar_macos_deps() {
 	tar -xf leveldb.tar.gz
 	tar -xf libogg.tar.gz
 	tar -xf libvorbis.tar.gz
-	tar -xf luajit.tar.gz
+	#tar -xf luajit.tar.gz
+	unzip luajit.zip
 	tar -xf zstd.tar.gz
 
 	tar -xf snappy.tar.gz
@@ -102,12 +104,12 @@ compile_macos_deps() {
 
 	dir=$(pwd)
 
-	rm -f include_cxx
+	#rm -f include_cxx
 	includecxx=""
-	if [[ ! -d "$sysroot/usr/include/c++/v1" ]]; then
-		ln -s /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1 include_cxx
-		includecxx="-I$dir/include_cxx"
-	fi
+	#if [[ ! -d "$sysroot/usr/include/c++/v1" ]]; then
+	#	ln -s /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1 include_cxx
+	#	includecxx="-I$dir/include_cxx"
+	#fi
 
 	export MACOSX_DEPLOYMENT_TARGET=$osx
 	export MACOS_DEPLOYMENT_TARGET=$osx
@@ -121,6 +123,10 @@ compile_macos_deps() {
 	export SDKROOT=$sysroot
 	hostdarwin="--host=${arch}-apple-darwin"
 	hostmacos="--host=${arch}-apple-macos${osx}"
+	hostdarwin_limit="--host=${arch}-apple-darwin"
+	if [[ $arch == "arm64" ]]; then
+		hostdarwin_limit="--host=arm-apple-darwin"
+	fi
 
 	echo "arch=$arch" > env_log.txt
 	echo "osx=$osx" >> env_log.txt
@@ -149,6 +155,7 @@ compile_macos_deps() {
 	echo "Configuring freetype..."
 	./configure "--prefix=${dir}/install" "LIBPNG_LIBS=-L${dir}/install/lib -lpng" \
 							"LIBPNG_CFLAGS=-I${dir}/install/include" $hostdarwin \
+							--with-harfbuzz=no --with-brotli=no --with-librsvg=no \
 							"CC_BUILD=clang -target ${arch}" 2>&1 | tee log_config.txt
 	echo "Building freetype..."
 	make -j$(sysctl -n hw.logicalcpu) 2>&1 | tee log_build.txt
@@ -238,7 +245,7 @@ compile_macos_deps() {
 	# libogg
 	cd libogg-*
 	echo "Configuring libogg..."
-	./configure "--prefix=$dir/install" $hostdarwin 2>&1 | tee log_config.txt
+	./configure "--prefix=$dir/install" $hostdarwin_limit 2>&1 | tee log_config.txt
 	echo "Building libogg..."
 	make -j$(sysctl -n hw.logicalcpu) 2>&1 | tee log_build.txt
 	make install 2>&1 | tee log_install.txt
