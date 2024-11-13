@@ -49,12 +49,12 @@ MAIN_DIR=$(pwd)
 
 if [[ "$step" == *"all"* ]] || [[ "$step" == *"libs_get"* ]] || [[ "$step" == *"libs_all"* ]]; then
 	echo "GETTING LIBRARY SOURCES"
-	download_macos_deps $osx
+	download_macos_deps $arch $osx
 fi
 
 if [[ "$step" == *"all"* ]] || [[ "$step" == *"libs_untar"* ]] || [[ "$step" == *"libs_all"* ]]; then
 	echo "UNARCHIVING LIBRARY SOURCES"
-	untar_macos_deps $osx
+	untar_macos_deps $arch $osx
 fi
 
 if [[ "$step" == *"all"* ]] || [[ "$step" == *"libs_build"* ]] || [[ "$step" == *"libs_all"* ]]; then

@@ -11,7 +11,8 @@ download_macos_archive() {
 }
 
 download_macos_deps() {
-	osx=$1
+	arch=$1
+	osx=$2
 
 	brew install cmake nasm wget m4 autoconf automake libtool
 
@@ -31,7 +32,11 @@ download_macos_deps() {
 	if [[ "$osx" == "10.15" ]]; then
 		download_macos_archive luajit.tar.gz https://github.com/LuaJIT/LuaJIT/archive/f725e44cda8f359869bf8f92ce71787ddca45618.tar.gz 2b5514bd6a6573cb6111b43d013e952cbaf46762d14ebe26c872ddb80b5a84e0
 	else
-		download_macos_archive luajit.zip https://github.com/sfence/LuaJIT/archive/refs/heads/sfence_macos_fix_and_map_jit.zip c5a16e3c09bc5f38941752f8fc7e420562660feb2a447bc4a7851f4e49c21249
+		if [[ "$arch" == "arm64" ]]; then
+			download_macos_archive luajit.zip https://github.com/sfence/LuaJIT/archive/refs/heads/sfence_macos_fix_and_map_jit.zip c5a16e3c09bc5f38941752f8fc7e420562660feb2a447bc4a7851f4e49c21249
+		else
+			download_macos_archive luajit.zip https://github.com/sfence/LuaJIT/archive/refs/heads/sfence_macos_map_jit_support.zip 2f61440516a4ee9b9bd04c8eb7aac1cfed81a0e18c7222b4f5dbc6b2b6861a30
+		fi
 	fi
 	download_macos_archive zstd.tar.gz https://github.com/facebook/zstd/archive/refs/tags/v1.5.6.tar.gz 30f35f71c1203369dc979ecde0400ffea93c27391bfd2ac5a9715d2173d92ff7
 	# leveldb depends
@@ -49,6 +54,9 @@ download_macos_deps() {
 }
 
 untar_macos_deps() {
+	arch=$1
+	osx=$2
+
 	cd deps
 
 	rm -fr libpng-*
