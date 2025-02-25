@@ -16,9 +16,6 @@ download_macos_deps() {
 
 	brew install cmake nasm wget m4 autoconf automake libtool
 
-	mkdir deps
-	cd deps
-
 	echo "Downloading sources..."
 	download_macos_archive gettext.tar.gz https://ftp.gnu.org/gnu/gettext/gettext-0.22.5.tar.gz ec1705b1e969b83a9f073144ec806151db88127f5e40fe5a94cb6c8fa48996a0
 	download_macos_archive freetype.tar.xz https://downloads.sourceforge.net/project/freetype/freetype2/2.13.3/freetype-2.13.3.tar.xz 0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289
@@ -49,15 +46,11 @@ download_macos_deps() {
 		#download_macos_dep openssl.tar.gz https://github.com/openssl/openssl/releases/download/openssl-3.3.1/openssl-3.3.1.tar.gz
 		#download_macos_dep curl.tar.bz2 https://curl.se/download/curl-8.9.1.tar.bz2 27e4b36550b676c42d1a533ade5b2b35ac7ca95e1998bd05cc34b5dfa3bdc9c0539ec7000481230b6431baa549e64da1b46b39d6ba1f112e37458d7b35948c2e
 	#fi
-
-	cd ..
 }
 
 untar_macos_deps() {
 	arch=$1
 	osx=$2
-
-	cd deps
 
 	rm -fr libpng-*
 	rm -fr gettext-*
@@ -97,8 +90,6 @@ untar_macos_deps() {
 
 		#tar -xf curl.tar.bz2
 	#fi
-
-	cd ..
 }
 
 compile_macos_deps() {
@@ -114,7 +105,6 @@ compile_macos_deps() {
 		exit 1
 	fi
 
-	cd deps
 	rm -fr install
 	mkdir install
 
@@ -282,7 +272,7 @@ compile_macos_deps() {
 	cd LuaJIT-*
 	echo "Building LuaJIT..."
 	jit_flags="-arch $arch -isysroot $sysroot"
-	make -j$(sysctl -n hw.logicalcpu) "PREFIX=$dir/install" \
+	make amalg -j$(sysctl -n hw.logicalcpu) "PREFIX=$dir/install" \
 				"CFLAGS=$jit_flags" "HOST_CFLAGS=$jit_flags" \
 				"TARGET_CFLAGS=$jit_flags" \
 				2>&1 | tee log_build.txt
@@ -313,6 +303,4 @@ compile_macos_deps() {
 	#make -j$(sysctl -n hw.logicalcpu)
 	#make install
 	#cd $dir
-
-	cd ..
 }
